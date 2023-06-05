@@ -22,3 +22,112 @@ Bonus content includes instructions to make your application VRF aware and guide
 - Environment: You are going to be using Virtual XR routers (running virtualized Cisco 8000 instances) and Centos7 Devbox VMs (for building images). You will use ssh to connect to these devices whenver needed. Again, ssh connectivity details will be on your desk or accessbile through WebEx on the workshop laptop.
 
 - I will use the "DNZ Workshop 05" WebEx space to broadcast any instructions/commands/messages during this session. Your workshop laptop should be a part of this space.
+
+## Workshop  Topology
+[INSERT WORKSHOP TOPOLOGY (DEVBOX <-> R0 <-> CLIENTBOX)]
+
+This workshop will use 
+
+## VPN Connection
+
+To access your assigned workshop environment, you must first connect to the sandbox VPN.
+
+- Begin by opening the Cisco Anyconnect Secure Mobility Client on your workshop laptop. 
+- Enter ```dcloud-sjc-anyconnect.cisco.com``` in the VPN field as shown below.
+- When prompted for a username and password, enter the credentials provided to you on your desk and on WebEx.
+- A successful VPN connection should be accompanied by a success message on the Anyconnect client.
+[Enter three images side by side of VPN connection steps 2,3,4. ]
+
+## Building your application
+
+IOS-XR's appmgr build scripts allow you to package docker images in ```.rpm``` files. The following steps will help you create an appmgr rpm for the ubuntu/bind9 docker image.
+
+### Connecting to your Devbox
+
+- Open a terminal tab on your workshop laptop.
+- SSH to the Devbox using the Devbox IP address and port number provided to you on your desk and on WebEx.
+- E.g. ```ssh -p <Devbox port> 198.18.134.1```
+
+### Using the appmgr build scripts
+
+- The appmgr build scripts are available at https://github.com/ios-xr/xr-appmgr-build. 
+- Clone and enter this repository.
+ ``` 
+ git clone https://github.com/ios-xr/xr-appmgr-build.git 
+ cd xr-appmgr-build/
+ ```
+- In this repository, ```appmgr_build``` is the main script that builds ```.rpm``` packages from docker images. Application specific information that can be provided to the ```appmgr_build``` script: 
+    - A compressed tarball containing our docker image.
+    - A ```.yaml``` file that will specify the build options for our application.
+    - [Optional] Config directory containing any configuration files for our application. 
+    - [Optional] Data directory containing any other files (e.g., TLS Certs) for our application.
+    - Both the Config and Data directories (if created), are packaged in the application ```rpm```. Once this package is installed, these are directories are also unpacked on the router and can be easily accessed by the application using docker volumes and docker bind mounts.
+- To simplify our workflow, let us create a directory specific to our application.
+```
+mkdir bind9/
+cd bind9/
+```
+- Now let us add our a compressed docker image in this directory. Since we are using ```ubuntu/bind9``` as our DNS server, we can directly pull this image from Dockerhub. Once the image has been pulled, we can save a compressed version of this image using the ```docker save``` command.
+```
+docker pull ubuntu/bind9
+docker save ubuntu/bind9 > bind.tar.gz
+```
+
+- After we have our compressed docker image, let us create a build.yaml file to add our build options. You can either use the ```vi``` text editor on the Devbox terminal shell. Or use Remote SSH connect with VSCode on your workshop laptop. (https://code.visualstudio.com/docs/remote/ssh)
+
+```
+vi build.yaml
+```
+
+- For our application, the ```build.yaml``` is provided below:
+```yaml
+packages:
+- name: "bind"
+  release: "ThinXR_7.3.15"
+  version: "1.0.1"
+  sources:
+    - name: bind
+      file: bind9/bind.tar.gz
+  config-dir:
+    - name: bind-configs
+      dir: bind9/config
+```
+- The different options set in our ```build.yaml``` are:
+    - The name of our package is specified under the name in packages. A single ```build.yaml``` can specify multiple packages to be installed. The ```version``` option can be specified to tag a version to the built ```rpm```. 
+
+    - Release should correspond to an entry in the release_configs directory. ThinXR_7.3.15 corresponds to most current IOS-XR router platforms (including the routers being used in this workshop). To build applications for legacy IOS-XR routers, eXR_7.3.1 must be specified.
+
+    - We must specify the name and path to the docker tarball under sources. The path specified is relative to the root directory of the ```xr-appmgr-build``` repository.
+
+    - [Optional] We specify the name and path to the config directory and data directory under config-dir and data-dir respectively. We are not using data or config directories in this example. Again the path is relative to the root directory of the ```xr-appmgr-build``` repository.
+
+-  Once we have created our ```build.yaml```, we will add configuration files specific to our application. ```ubuntu/bind9``` relies on config files to specify DNS options. 
+
+    - The Devbox has config files for this demo in the ```/root/bind-configs/config``` directory. Copy these files to the ```xr-appmgr-build/bind9 ``` directory. Assuming you cloned the xr-appmgr-build repository in the Devbox's home directory.
+
+    ```
+    cp -r /root/bind-configs/ ~/xr-appmgr-build/bind9 
+    ```
+    - You can inspect the contents of these configs. For the purposes of this demo, the DNS server contains a mapping of ```service1.clus.demo ``` to ``` 10.1.1.34```. Once we have the DNS server running on the router, we will verify that a client (such as the Devbox) can query the router with a ```DNS WHOIS?``` and get the correct response.
+
+- After completing the steps above, the ```bind9``` directory should look like:
+```
+├── bind.tar.gz
+├── build.yaml
+└── config
+    ├── db.ios-xr.tme
+    ├── named.conf.local
+    └── named.conf.options
+```
+- Now let us build our ```rpm``` package. From the ```xr-appmgr-build directory``` issue the build command. 
+```
+cd ~/xr-appmgr-build/
+./appmgr_build -b bind9/build.yaml
+```
+- The built package will be present in the ```xr-appmgr-build/RPMS/x86_64/``` directory. Copy this ```rpm``` to the router's ```/misc/disk1/``` directory.
+- You can use the router IP directly connected to the Devbox, ```10.1.1.1 ```. The router credentials are provided to you on your desk and on WebEx.
+- Copy the build ```rpm``` using the ```scp``` command. Example:
+```
+scp ~/xr-appmgr-build/RPMS/x86_64/bind-1.0.1-ThinXR_7.3.15.x86_64.rpm cisco@10.1.1.1:/misc/disk1/
+```
+
