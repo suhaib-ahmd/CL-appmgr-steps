@@ -36,17 +36,20 @@ To access your assigned workshop environment, you must first connect to the sand
 - Enter ```dcloud-sjc-anyconnect.cisco.com``` in the VPN field as shown below.
 - When prompted for a username and password, enter the credentials provided to you on your desk and on WebEx.
 - A successful VPN connection should be accompanied by a success message on the Anyconnect client.
-[Enter three images side by side of VPN connection steps 2,3,4. ]
+
+<img src="images/anyconnect-1.png"  width="150" height="200"><img src="images/anyconnect-2.png"  width="225" height="300"><img src="images/anyconnect-3.png"  width="225" height="300">
 
 ## Building your application
 
 IOS-XR's appmgr build scripts allow you to package docker images in ```.rpm``` files. The following steps will help you create an appmgr rpm for the ubuntu/bind9 docker image.
 
+![Alt text](images/app-build.drawio.svg)
+
 ### Connecting to your Devbox
 
 - Open a terminal tab on your workshop laptop.
 - SSH to the Devbox using the Devbox IP address and port number provided to you on your desk and on WebEx.
-- E.g. ```ssh -p <Devbox port> 198.18.134.1```
+- E.g. ```ssh -p <Devbox port> root@198.18.134.1```
 
 ### Using the appmgr build scripts
 
@@ -131,3 +134,35 @@ cd ~/xr-appmgr-build/
 scp ~/xr-appmgr-build/RPMS/x86_64/bind-1.0.1-ThinXR_7.3.15.x86_64.rpm cisco@10.1.1.1:/misc/disk1/
 ```
 
+## Installing and Running your application
+
+### Connecting to your Router (R0)
+
+- Open a another terminal tab on your workshop laptop.
+- SSH to the Router (R0) using the Devbox IP address and port number provided to you on your desk and on WebEx.
+- E.g. ```ssh -p <router port> cisco@198.18.134.1```
+
+### Installing the application package
+
+- Now that we have learned how to package docker applications as appmgr rpms, let us try installing and running rpm packages using appmgr.
+
+- After copying the rpm onto the router, we can install it using appmgr CLI commands.
+```
+appmgr package install rpm /misc/disk1/bind-1.0.1-ThinXR_7.3.15.x86_64.rpm
+```
+We can verify if the packaged was installed using:
+```
+show appmgr packages installed
+```
+Once the package has been installed, the application can be activated using
+```
+(conf) appmgr application my-app activate type docker source hello-world docker-run-opts “<YOUR DOCKER RUN OPTS>”
+```
+For our application:
+```
+configure terminal
+
+appmgr application bind activate type docker source bind docker-run-opts "-itd --hostname=ns1 --network=host -v {app_install_root}/config/bind-configs/named.conf.options:/etc/bind/named.conf.options -v {app_install_root}/config/bind-configs/named.conf.local:/etc/bind/named.conf.local -v {app_install_root}/config/bind-configs/db.ios-xr.tme:/etc/bind/zones/db.ios-xr.tme"
+
+commit
+```
