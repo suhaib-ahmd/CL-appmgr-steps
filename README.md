@@ -123,8 +123,7 @@ vi build.yaml
     - The Devbox has config files for this demo in the ```/root/bind-configs/config``` directory. Copy these files to the ```xr-appmgr-build/bind9 ``` directory. Assuming you cloned the xr-appmgr-build repository in the Devbox's home directory.
 
     ```
-    cp -r /root/bind-configs/ ~/xr-appmgr-build/bind9
-    mv ~/xr-appmgr-build/bind9/bind-configs ~/xr-appmgr-build/bind9/config 
+    cp -r /root/bind-configs/config ~/xr-appmgr-build/bind9 
     ```
     - You can inspect the contents of these configs. For the purposes of this demo, the DNS server contains a mapping of ```service1.clus.demo ``` to ``` 10.1.1.34```. Once we have the DNS server running on the router, we will verify that a client (such as the Devbox) can query the router with a ```DNS WHOIS?``` and get the correct response.
     <br></br>
