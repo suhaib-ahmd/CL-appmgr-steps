@@ -127,6 +127,7 @@ vi build.yaml
     ```
     - You can inspect the contents of these configs. For the purposes of this demo, the DNS server contains a mapping of ```service1.clus.demo ``` to ``` 10.1.1.34```. Once we have the DNS server running on the router, we will verify that a client (such as the Devbox) can query the router with a ```DNS WHOIS?``` and get the correct response.
     <br></br>
+
     **bind-configs/db.ios-xr.tme**
     ```
     $TTL    1d ; default expiration time (in seconds) of all RRs without their own TTL value
@@ -231,4 +232,161 @@ configure terminal
 appmgr application bind activate type docker source bind docker-run-opts "-itd --hostname=ns1 --network=host -v {app_install_root}/config/bind-configs/named.conf.options:/etc/bind/named.conf.options -v {app_install_root}/config/bind-configs/named.conf.local:/etc/bind/named.conf.local -v {app_install_root}/config/bind-configs/db.ios-xr.tme:/etc/bind/zones/db.ios-xr.tme"
 
 commit
+end
 ```
+![App activation](images/app-activate.svg)
+
+We can verify running application status using the following commands:
+
+#### Show running applications and their status.
+
+```show appmgr application-table ```
+```
+RP/0/RP0/CPU0:R1#show appmgr application-table
+Tue Jun  6 17:48:07.659 UTC
+Name Type   Config State Status
+---- ------ ------------ ------------------------------------------------------
+bind Docker  Activated   Up About a minute
+ ```
+
+#### Show detailed docker info for a specific application.
+
+ ```show appmgr application name bind info detail ```
+
+ ```
+RP/0/RP0/CPU0:R1#show appmgr application name bind info detail
+Tue Jun  6 17:52:40.745 UTC
+Application: bind
+  Type: Docker
+  Source: bind
+  Config State: Activated
+  Docker Information:
+    Container ID: ef65e0ed742af28d79eca26e1707fab65a6a8e1dc8825304af1d9d3a778bc1bc
+    Container name: bind
+    Labels: org.opencontainers.image.ref.name=ubuntu,org.opencontainers.image.version=23.04
+    Image: ubuntu/bind9:latest
+    Command: "docker-entrypoint.sh"
+    Created at: 2023-06-06 17:46:47 +0000 UTC
+    Running for: 5 minutes ago
+    Status: Up 5 minutes
+    Size: 104B (virtual 143MB)
+    Ports:
+    Mounts: debb7c58de6775d3171484e51876e6597ff13af67d4a0280fc3e23e9405702e4,69ab3a12a365b56c8b5ada19c5c6a820e85932ca0f69aeb61b76876b12e7914c,/var/lib/docker/appmgr/config/bind-configs/named.conf.local,/var/lib/docker/appmgr/config/bind-configs/named.conf.options,/var/lib/docker/appmgr/config/bind-configs/db.ios-xr.tme
+    Networks: host
+    LocalVolumes: 2
+ ```
+
+#### Show application logs
+
+```show appmgr application name bind logs ```
+```
+Tue Jun  6 17:56:08.663 UTC
+Starting named...
+exec /usr/sbin/named -u "bind" "-g" ""
+06-Jun-2023 17:46:48.410 starting BIND 9.18.12-1ubuntu1-Ubuntu (Extended Support Version) <id:>
+06-Jun-2023 17:46:48.410 running on Linux x86_64 4.8.28-WR9.0.0.26_cgl #1 SMP Sat Jan 14 00:43:09 UTC 2023
+06-Jun-2023 17:46:48.410 built with  '--build=x86_64-linux-gnu' '--prefix=/usr' '--includedir=${prefix}/include' '--mandir=${prefix}/share/man' '--infodir=${prefix}/share/info' '--sysconfdir=/etc' '--localstatedir=/var' '--disable-option-checking' '--disable-silent-rules' '--libdir=${prefix}/lib/x86_64-linux-gnu' '--runstatedir=/run' '--disable-maintainer-mode' '--disable-dependency-tracking' '--libdir=/usr/lib/x86_64-linux-gnu' '--sysconfdir=/etc/bind' '--with-python=python3' '--localstatedir=/' '--enable-threads' '--enable-largefile' '--with-libtool' '--enable-shared' '--disable-static' '--with-gost=no' '--with-openssl=/usr' '--with-gssapi=yes' '--with-libidn2' '--with-json-c' '--with-lmdb=/usr' '--with-gnu-ld' '--with-maxminddb' '--with-atf=no' '--enable-ipv6' '--enable-rrl' '--enable-filter-aaaa' '--disable-native-pkcs11' 'build_alias=x86_64-linux-gnu' 'CFLAGS=-g -O2 -ffile-prefix-map=/build/bind9-Za0Td3/bind9-9.18.12=. -flto=auto -ffat-lto-objects -fstack-protector-strong -Wformat -Werror=format-security -fdebug-prefix-map=/build/bind9-Za0Td3/bind9-9.18.12=/usr/src/bind9-1:9.18.12-1ubuntu1 -fno-strict-aliasing -fno-delete-null-pointer-checks -DNO_VERSION_DATE -DDIG_SIGCHASE' 'LDFLAGS=-Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -Wl,-z,relro -Wl,-z,now' 'CPPFLAGS=-Wdate-time -D_FORTIFY_SOURCE=2'
+```
+
+#### Show application stats
+```show appmgr application name bind stats ```
+```
+Tue Jun  6 17:54:36.888 UTC
+Application Stats: bind
+   CPU Percentage: 0.00%
+   Memory Usage: 6.906MiB / 19.42GiB
+   Memory Percentage: 0.03%
+   Network IO: 0B / 0B
+   Block IO: 0B / 81.9kB
+   PIDs: 10
+```
+
+We can perform actions on running applications using the following commands:
+<br></br>
+**Note that these are reference commands. Please do not execute them on the router, they may stop/kill our running application**
+
+#### Copy files from router file system to application container
+
+E.g., ```appmgr application copy harddisk:foo/ bind:/bar```
+
+#### Execute command inside the application container
+
+E.g., To drop into the router shell ```appmgr application exec name bind docker-exec-cmd /bin/bash/```
+
+```
+RP/0/RP0/CPU0:R1#appmgr application exec name bind docker-exec-cmd /bin/bash
+Tue Jun  6 18:01:04.855 UTC
+root@ns1:/#
+```
+
+#### Kill a running application
+
+E.g., ```appmgr application kill name bind```
+
+#### Stop a running application
+
+E.g., ```appmgr application stop name bind ```
+
+#### Start a running application
+
+E.g., ```appmgr application start name bind ```
+
+### Testing our application
+
+To test our application let us first reconnect to our Devbox.
+
+- Open a new terminal tab on your workshop laptop or go back to the original Devbox SSH terminal.
+- If your SSH session was terminated, SSH to the Devbox using the Devbox IP address and port number provided to you on your desk and on WebEx.
+- E.g. ```ssh -p <Devbox port> root@198.18.134.1```
+
+We will use the Devbox as our DNS client so let us configure the Devbox to use our DNS Server as its primary NS.
+
+Open the `/etc/resolv.conf` file on the Devbox with a text editor like `vi`.
+
+`vi /etc/resolv.conf`
+
+The contents of `/etc/resolv.conf` should look like:
+
+```
+; generated by /usr/sbin/dhclient-script
+nameserver 192.168.122.1
+search localdomain
+```
+
+Edit this file to add our DNS server, `10.1.1.1` in this list.
+
+```
+```
+Recall that you will have a vi terminal for an existing file `/etc/resolv.conf` open. Type `i` to enter in the insert mode. Add the line `nameserver 10.1.1.1` at the beginning of the file. Press ```Esc``` to go back to the command mode. Type `wq` and the press `Enter` to save and quit vi.
+
+Your edited `/etc/resolv.conf` should look like:
+
+```
+; generated by /usr/sbin/dhclient-script
+nameserver 10.1.1.1
+nameserver 192.168.122.1
+search localdomain
+```
+
+Now let us try issuing an `nslookup` query for the entry in our DNS Server - `service1.clus.demo`. Your DNS server should be able to provide you with a response with the IP address of the Clientbox.
+
+```
+[root@localhost ~]# nslookup service1.clus.demo
+Server:		10.1.1.1
+Address:	10.1.1.1#53
+
+Name:	service1.clus.demo
+Address: 10.1.1.34
+```
+
+Let us try using `ping` to reach the Clientbox. 
+
+```
+[root@localhost ~]# ping service1.clus.demo
+PING service1.clus.demo (10.1.1.34) 56(84) bytes of data.
+64 bytes from 10.1.1.34 (10.1.1.34): icmp_seq=1 ttl=63 time=3.52 ms
+64 bytes from 10.1.1.34 (10.1.1.34): icmp_seq=2 ttl=63 time=4.88 ms
+64 bytes from 10.1.1.34 (10.1.1.34): icmp_seq=3 ttl=63 time=3.67 ms
+```
+
+We have succesfully used our DNS app to reach our Clientbox!
