@@ -37,7 +37,9 @@ To access your assigned workshop environment, you must first connect to the sand
 - When prompted for a username and password, enter the credentials provided to you on your desk and on WebEx.
 - A successful VPN connection should be accompanied by a success message on the Anyconnect client.
 
-<img src="images/anyconnect-1.png"  width="150" height="200"><img src="images/anyconnect-2.png"  width="225" height="300"><img src="images/anyconnect-3.png"  width="225" height="300">
+<img src="images/anyconnect-1.png"  width="150" height="200"><img src="images/anyconnect-2.png"  width="200" height="300"><img src="images/anyconnect-3.png"  width="200" height="300"> 
+<br></br>
+<em>Connecting to the VPN</em>
 
 ## Building your application
 
@@ -143,6 +145,8 @@ scp ~/xr-appmgr-build/RPMS/x86_64/bind-1.0.1-ThinXR_7.3.15.x86_64.rpm cisco@10.1
 - E.g. ```ssh -p <router port> cisco@198.18.134.1```
 
 ### Installing the application package
+
+![Alt text](images/app-install.svg)
 
 - Now that we have learned how to package docker applications as appmgr rpms, let us try installing and running rpm packages using appmgr.
 
