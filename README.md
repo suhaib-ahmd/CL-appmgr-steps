@@ -15,18 +15,25 @@ Bonus content includes instructions to make your application VRF aware and guide
 
 ## General Guidelines
 
-- Please feel free to ask any workshop-related questions during the session. For general IOS-XR application hosting related queries, meet me after the session to schedule time for a detailed discussion.
+- Please feel free to ask any workshop-related questions during the session. For general IOS-XR application hosting related queries, meet me after the session.
 
-- You will use a Cisco anyconnect VPN to connect you to the workshop sandbox environment. You can find instructions to connect to this VPN at your desk and on the WebEx. The WebEx space with these details will be accessible through the workshop laptop.
+- You will use a Cisco anyconnect VPN to connect you to the workshop sandbox environment. You can find instructions to connect to this VPN in a later section of this guide. You will have a WebEx message containing VPN credentials that will be accessible through the workshop laptop.
 
 - Environment: You are going to be using Virtual XR routers (running virtualized Cisco 8000 instances) and Centos7 Devbox VMs (for building images). You will use ssh to connect to these devices whenver needed. Again, ssh connectivity details will be on your desk or accessbile through WebEx on the workshop laptop.
 
 - I will use the "DNZ Workshop 05" WebEx space to broadcast any instructions/commands/messages during this session. Your workshop laptop should be a part of this space.
 
 ## Workshop  Topology
-[INSERT WORKSHOP TOPOLOGY (DEVBOX <-> R0 <-> CLIENTBOX)]
 
-This workshop will use 
+This workshop will use a simple topology consisting of the following devices:
+
+- Devbox: This is a Centos7 Linux environment that we will use to build our appmgr ```rpm ``` package. After installing our DNS Server application on the router, we will use the Devbox as a DNS client and try to resolve domain names to IP addresses using the ```nslookup``` utility which is pre-installed on the Devbox.
+
+- R0: This is a virtual router runnining IOS-XR. The virtual router is emulating the Cisco 8000 series of routers. We will use this router to issue ```appmgr``` commands to install and run our DNS server application package. 
+
+- Clientbox: This is also a Centos7 Linux environment. You will not need to access this device. The entry for ```service1.clus.demo ``` in our DNS server will correspond to this device's IP. We will use this to test connection to this device using ```ping``` and ```netcat```.
+
+![Workshop Topology](images/topology.svg)
 
 ## VPN Connection
 
@@ -34,7 +41,7 @@ To access your assigned workshop environment, you must first connect to the sand
 
 - Begin by opening the Cisco Anyconnect Secure Mobility Client on your workshop laptop. 
 - Enter ```dcloud-sjc-anyconnect.cisco.com``` in the VPN field as shown below.
-- When prompted for a username and password, enter the credentials provided to you on your desk and on WebEx.
+- When prompted for a username and password, enter the credentials provided to you on WebEx.
 - A successful VPN connection should be accompanied by a success message on the Anyconnect client.
 
 <img src="images/anyconnect-1.png"  width="150" height="200"><img src="images/anyconnect-2.png"  width="200" height="300"><img src="images/anyconnect-3.png"  width="200" height="300"> 
@@ -45,7 +52,7 @@ To access your assigned workshop environment, you must first connect to the sand
 
 IOS-XR's appmgr build scripts allow you to package docker images in ```.rpm``` files. The following steps will help you create an appmgr rpm for the ubuntu/bind9 docker image.
 
-![Alt text](images/app-build.drawio.svg)
+![Application Building Steps](images/app-build.drawio.svg)
 
 ### Connecting to your Devbox
 
@@ -80,10 +87,6 @@ docker save ubuntu/bind9 > bind.tar.gz
 
 - After we have our compressed docker image, let us create a build.yaml file to add our build options. You can either use the ```vi``` text editor on the Devbox terminal shell. Or use Remote SSH connect with VSCode on your workshop laptop. (https://code.visualstudio.com/docs/remote/ssh)
 
-```
-vi build.yaml
-```
-
 - For our application, the ```build.yaml``` is provided below:
 ```yaml
 packages:
@@ -95,8 +98,17 @@ packages:
       file: bind9/bind.tar.gz
   config-dir:
     - name: bind-configs
-      dir: bind9/config
+      dir: bind9/bind-configs
 ```
+
+Using `vi`:
+
+```
+vi build.yaml
+```
+
+ When you enter the command above, you will have a vi terminal for a new file `build.yaml` open. Type `i` to enter in the insert mode. Paste (`Ctrl+V` or `Command+V`) the copied `build.yaml` contents from above. Press ```Esc``` to go back to the command mode. Type `wq` and the press `Enter` to save and quit vi.
+
 - The different options set in our ```build.yaml``` are:
     - The name of our package is specified under the name in packages. A single ```build.yaml``` can specify multiple packages to be installed. The ```version``` option can be specified to tag a version to the built ```rpm```. 
 
@@ -114,6 +126,47 @@ packages:
     cp -r /root/bind-configs/ ~/xr-appmgr-build/bind9 
     ```
     - You can inspect the contents of these configs. For the purposes of this demo, the DNS server contains a mapping of ```service1.clus.demo ``` to ``` 10.1.1.34```. Once we have the DNS server running on the router, we will verify that a client (such as the Devbox) can query the router with a ```DNS WHOIS?``` and get the correct response.
+    <br></br>
+    **bind-configs/db.ios-xr.tme**
+    ```
+    $TTL    1d ; default expiration time (in seconds) of all RRs without their own TTL value
+    @       IN      SOA     ns1.clus.demo. root.clus.demo. (
+                    3      ; Serial
+                    1d     ; Refresh
+                    1h     ; Retry
+                    1w     ; Expire
+                    1h )   ; Negative Cache TTL
+
+    ; name servers - NS records
+        IN      NS      ns1.clus.demo.
+
+    ; name servers - A records
+    ns1.clus.demo.             IN      A      10.1.1.1
+
+    service1.clus.demo.        IN      A      10.1.1.34
+
+    ```
+
+    **bind-configs/named.conf.local**
+    ```
+    zone "clus.demo" {
+    type master;
+    file "/etc/bind/zones/db.ios-xr.tme";
+    };
+    ```
+    **bind-configs/named.conf.options**
+    ```
+    options {
+    directory "/var/cache/bind";
+
+    recursion yes;
+    listen-on { any; };
+
+    forwarders {
+            8.8.8.8;
+        };
+    };
+    ```
 
 - After completing the steps above, the ```bind9``` directory should look like:
 ```
