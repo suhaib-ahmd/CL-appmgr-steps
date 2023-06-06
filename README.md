@@ -211,6 +211,16 @@ We can verify if the packaged was installed using:
 ```
 show appmgr packages installed
 ```
+Output
+```
+RP/0/RP0/CPU0:R1#show appmgr packages installed
+Tue Jun  6 17:23:26.605 UTC
+Package
+------------------------------------------------------------
+bind-1.0.1-ThinXR_7.3.15.x86_64
+
+RP/0/RP0/CPU0:R1#
+```
 Once the package has been installed, the application can be activated using
 ```
 (conf) appmgr application my-app activate type docker source hello-world docker-run-opts “<YOUR DOCKER RUN OPTS>”
@@ -219,7 +229,7 @@ For our application:
 ```
 configure terminal
 
-appmgr application bind activate type docker source bind docker-run-opts "-itd --hostname=ns1 --network=host -v {app_install_root}/config/bind-configs/named.conf.options:/etc/bind/named.conf.options -v {app_install_root}/config/bind-configs/named.conf.local:/etc/bind/named.conf.local -v {app_install_root}/config/bind-configs/db.ios-xr.tme:/etc/bind/zones/db.ios-xr.tme"
+appmgr application bind activate type docker source bind docker-run-opts "-itd --hostname=ns1 --network=host -v {app_install_root}/bind-configs/bind-configs/named.conf.options:/etc/bind/named.conf.options -v {app_install_root}/bind-configs/bind-configs/named.conf.local:/etc/bind/named.conf.local -v {app_install_root}/bind-configs/bind-configs/db.ios-xr.tme:/etc/bind/zones/db.ios-xr.tme"
 
 commit
 ```
