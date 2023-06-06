@@ -356,6 +356,7 @@ search localdomain
 Edit this file to add our DNS server, `10.1.1.1` in this list.
 
 ```
+nameserver 10.1.1.1
 ```
 Recall that you will have a vi terminal for an existing file `/etc/resolv.conf` open. Type `i` to enter in the insert mode. Add the line `nameserver 10.1.1.1` at the beginning of the file. Press ```Esc``` to go back to the command mode. Type `wq` and the press `Enter` to save and quit vi.
 
