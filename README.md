@@ -252,7 +252,9 @@ bind Docker  Activated   Up About a minute
 
 #### Show detailed docker info for a specific application.
 
- ```show appmgr application name bind info detail ```
+ ```
+ show appmgr application name bind info detail 
+ ```
 
  ```
 RP/0/RP0/CPU0:R1#show appmgr application name bind info detail
@@ -279,7 +281,9 @@ Application: bind
 
 #### Show application logs
 
-```show appmgr application name bind logs ```
+```
+show appmgr application name bind logs 
+```
 
 ```
 Tue Jun  6 17:56:08.663 UTC
@@ -291,7 +295,9 @@ exec /usr/sbin/named -u "bind" "-g" ""
 ```
 
 #### Show application stats
-```show appmgr application name bind stats ```
+```
+show appmgr application name bind stats 
+```
 
 ```
 Tue Jun  6 17:54:36.888 UTC
