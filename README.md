@@ -19,7 +19,7 @@ Bonus content includes instructions to make your application VRF aware and guide
 
 - You will use a Cisco anyconnect VPN to connect you to the workshop sandbox environment. You can find instructions to connect to this VPN in a later section of this guide. You will have a WebEx message containing VPN credentials that will be accessible through the workshop laptop.
 
-- Environment: You are going to be using Virtual XR routers (running virtualized Cisco 8000 instances) and Centos7 Devbox VMs (for building images). You will use ssh to connect to these devices whenver needed. Again, ssh connectivity details will be on your desk or accessbile through WebEx on the workshop laptop.
+- Environment: You are going to be using Virtual XR routers (running virtualized Cisco 8000 instances) and Centos7 Devbox VMs (for building images). You will use ssh to connect to these devices whenver needed. Again, ssh connectivity details accessbile through WebEx on the workshop laptop.
 
 - I will use the "DNZ Workshop 05" WebEx space to broadcast any instructions/commands/messages during this session. Your workshop laptop should be a part of this space.
 
@@ -57,7 +57,7 @@ IOS-XR's appmgr build scripts allow you to package docker images in ```.rpm``` f
 ### Connecting to your Devbox
 
 - Open a terminal tab on your workshop laptop.
-- SSH to the Devbox using the Devbox IP address and port number provided to you on your desk and on WebEx.
+- SSH to the Devbox using the Devbox IP address and port number provided to you on WebEx.
 - E.g. ```ssh -p <Devbox port> root@198.18.134.1```
 
 ### Using the appmgr build scripts
@@ -107,7 +107,7 @@ Using `vi`:
 vi build.yaml
 ```
 
- When you enter the command above, you will have a vi terminal for a new file `build.yaml` open. Type `i` to enter in the insert mode. Paste (`Ctrl+V` or `Command+V`) the copied `build.yaml` contents from above. Press ```Esc``` to go back to the command mode. Type `wq` and the press `Enter` to save and quit vi.
+ When you enter the command above, you will have a vi terminal for a new file `build.yaml` open. Type `i` to enter in the insert mode. Paste (`Ctrl+V` or `Command+V`) the copied `build.yaml` contents from above. Press ```Esc``` to go back to the command mode. Type `:wq` and the press `Enter` to save and quit vi.
 
 - The different options set in our ```build.yaml``` are:
     - The name of our package is specified under the name in packages. A single ```build.yaml``` can specify multiple packages to be installed. The ```version``` option can be specified to tag a version to the built ```rpm```. 
@@ -184,7 +184,7 @@ cd ~/xr-appmgr-build/
 ./appmgr_build -b bind9/build.yaml
 ```
 - The built package will be present in the ```xr-appmgr-build/RPMS/x86_64/``` directory. Copy this ```rpm``` to the router's ```/misc/disk1/``` directory.
-- You can use the router IP directly connected to the Devbox, ```10.1.1.1 ```. The router credentials are provided to you on your desk and on WebEx.
+- You can use the router IP directly connected to the Devbox, ```10.1.1.1 ```. The router credentials are provided to you on WebEx.
 - Copy the build ```rpm``` using the ```scp``` command. Example:
 ```
 scp ~/xr-appmgr-build/RPMS/x86_64/bind-1.0.1-ThinXR_7.3.15.x86_64.rpm cisco@10.1.1.1:/misc/disk1/
@@ -195,7 +195,7 @@ scp ~/xr-appmgr-build/RPMS/x86_64/bind-1.0.1-ThinXR_7.3.15.x86_64.rpm cisco@10.1
 ### Connecting to your Router (R0)
 
 - Open a another terminal tab on your workshop laptop.
-- SSH to the Router (R0) using the Devbox IP address and port number provided to you on your desk and on WebEx.
+- SSH to the Router (R0) using the Devbox IP address and port number provided to you on WebEx.
 - E.g. ```ssh -p <router port> cisco@198.18.134.1```
 
 ### Installing the application package
@@ -336,7 +336,7 @@ E.g., ```appmgr application start name bind ```
 To test our application let us first reconnect to our Devbox.
 
 - Open a new terminal tab on your workshop laptop or go back to the original Devbox SSH terminal.
-- If your SSH session was terminated, SSH to the Devbox using the Devbox IP address and port number provided to you on your desk and on WebEx.
+- If your SSH session was terminated, SSH to the Devbox using the Devbox IP address and port number provided to you on WebEx.
 - E.g. ```ssh -p <Devbox port> root@198.18.134.1```
 
 We will use the Devbox as our DNS client so let us configure the Devbox to use our DNS Server as its primary NS.
@@ -353,10 +353,10 @@ nameserver 192.168.122.1
 search localdomain
 ```
 
-Edit this file to add our DNS server, `10.1.1.1` in this list.
+Edit this file to add our DNS server, `nameserver 10.1.1.1` in this list.
 
 ```
-nameserver 10.1.1.1
+vi /etc/resolv.conf
 ```
 Recall that you will have a vi terminal for an existing file `/etc/resolv.conf` open. Type `i` to enter in the insert mode. Add the line `nameserver 10.1.1.1` at the beginning of the file. Press ```Esc``` to go back to the command mode. Type `wq` and the press `Enter` to save and quit vi.
 
