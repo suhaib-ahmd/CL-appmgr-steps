@@ -241,6 +241,7 @@ We can verify running application status using the following commands:
 #### Show running applications and their status.
 
 ```show appmgr application-table ```
+
 ```
 RP/0/RP0/CPU0:R1#show appmgr application-table
 Tue Jun  6 17:48:07.659 UTC
@@ -279,6 +280,7 @@ Application: bind
 #### Show application logs
 
 ```show appmgr application name bind logs ```
+
 ```
 Tue Jun  6 17:56:08.663 UTC
 Starting named...
@@ -290,6 +292,7 @@ exec /usr/sbin/named -u "bind" "-g" ""
 
 #### Show application stats
 ```show appmgr application name bind stats ```
+
 ```
 Tue Jun  6 17:54:36.888 UTC
 Application Stats: bind
@@ -391,3 +394,52 @@ PING service1.clus.demo (10.1.1.34) 56(84) bytes of data.
 ```
 
 We have succesfully used our DNS app to reach our Clientbox!
+
+### Bonus Content - Receiving DNS requests in a VRF
+
+We may have a scenario where our application has to send and receive traffic over interfaces in VRFs other than the global VRF.
+
+To support this, VRFs created in IOS-XR are mapped as Linux Network Namespaces. For e.g., when you create vrf `green` in XR, there is a corresponding `vrf-green` Linux Network Namespace created. These namespaces are present in the `/var/run/netns/` directory on the router's filesystem. Any container that needs to send or receive traffic over VRF interfaces needs to map this directory into the container filesystem.
+
+We can easily extend our DNS example to receive DNS queries from the Devbox over a Linux network namespace.
+
+To begin with, remove IP address configuration from the router interface connected to the Devbox. 
+
+```
+configure
+interface FourHundredGigE0/0/0/0
+ no ipv4 address 10.1.1.1 255.255.255.224
+!
+commit
+end
+```
+Next create a new VRF.
+```
+configure
+vrf green
+commit
+end
+
+Now, let's add our router interface connected to the Devbox to this VRF
+```
+interface FourHundredGigE0/0/0/0
+ vrf green
+ ipv4 address 10.1.1.1 255.255.255.224
+!
+commit
+end
+```
+Now that our interface is in `vrf green`. Let's start our DNS server in this VRF
+
+Stop the previous container
+
+```
+no appmgr application bind
+commit
+end
+```
+
+Start a new container with a docker exec command that starts the bind9 process inside `vrf green`
+```
+appmgr application bind activate type docker source bind docker-run-opts "-d --hostname=ns1 --network=host -v {app_install_root}/config/bind-configs/named.conf.options:/etc/bind/named.conf.options -v /var/run/netns:/var/run/netns -v {app_install_root}/config/bind-configs/named.conf.local:/etc/bind/named.conf.local -v {app_install_root}/config/bind-configs/db.ios-xr.tme:/etc/bind/zones/db.ios-xr.tme --cap-add=NET_ADMIN --cap-add=SYS_ADMIN" docker-run-cmd "ip netns exec vrf-green /usr/sbin/named -g -c /etc/bind/named.conf -u bind"
+```
