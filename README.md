@@ -31,7 +31,7 @@ This workshop will use a simple topology consisting of the following devices:
 
 - R0: This is a virtual router runnining IOS-XR. The virtual router is emulating the Cisco 8000 series of routers. We will use this router to issue ```appmgr``` commands to install and run our DNS server application package. 
 
-- Clientbox: This is also a Centos7 Linux environment. You will not need to access this device. The entry for ```service1.clus.demo ``` in our DNS server will correspond to this device's IP. We will use this to test connection to this device using ```ping``` and ```netcat```.
+- Clientbox: This is also a Centos7 Linux environment. You will not need to access this device. The entry for ```service1.clus.demo ``` in our DNS server will correspond to this device's IP. We will use this to test connection to this device using ```ping```.
 
 ![Workshop Topology](images/topology.svg)
 
@@ -403,7 +403,7 @@ PING service1.clus.demo (10.1.1.34) 56(84) bytes of data.
 
 We have succesfully used our DNS app to reach our Clientbox!
 
-### Bonus Content - Receiving DNS requests in a VRF
+### Bonus Content - Running our application in a VRF
 
 We may have a scenario where our application has to send and receive traffic over interfaces in VRFs other than the global VRF.
 
@@ -450,4 +450,12 @@ end
 Start a new container with a docker exec command that starts the bind9 process inside `vrf green`
 ```
 appmgr application bind activate type docker source bind docker-run-opts "-d --hostname=ns1 --network=host -v {app_install_root}/config/bind-configs/named.conf.options:/etc/bind/named.conf.options -v /var/run/netns:/var/run/netns -v {app_install_root}/config/bind-configs/named.conf.local:/etc/bind/named.conf.local -v {app_install_root}/config/bind-configs/db.ios-xr.tme:/etc/bind/zones/db.ios-xr.tme --cap-add=NET_ADMIN --cap-add=SYS_ADMIN" docker-run-cmd "ip netns exec vrf-green /usr/sbin/named -g -c /etc/bind/named.conf -u bind"
+```
+
+Alternatively, instead of launching applications in network namespaces or making application network namespace aware, we can use an appmgr feature to support port forwarding between different VRFs.
+
+To use this feature, we can include a `--vrf-forward` option in our `docker-run-opts` section of the `appmgr activate` command. The following option will forward traffic between port 5053 of `vrf-green` and port 53 of `vrf` default.
+
+```
+--vrf-forward vrf-blue:5053 vrf-default:53
 ```
