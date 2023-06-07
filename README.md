@@ -240,7 +240,9 @@ We can verify running application status using the following commands:
 
 #### Show running applications and their status.
 
-```show appmgr application-table ```
+```
+show appmgr application-table 
+```
 
 ```
 RP/0/RP0/CPU0:R1#show appmgr application-table
