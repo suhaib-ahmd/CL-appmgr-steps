@@ -430,6 +430,7 @@ end
 ```
 Now, let's add our router interface connected to the Devbox to this VRF
 ```
+configure
 interface FourHundredGigE0/0/0/0
  vrf green
  ipv4 address 10.1.1.1 255.255.255.224
@@ -442,6 +443,7 @@ Now that our interface is in `vrf green`. Let's start our DNS server in this VRF
 Stop the previous container
 
 ```
+configure
 no appmgr application bind
 commit
 end
