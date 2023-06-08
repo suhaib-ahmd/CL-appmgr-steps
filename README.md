@@ -107,7 +107,20 @@ Using `vi`:
 vi build.yaml
 ```
 
- When you enter the command above, you will have a vi terminal for a new file `build.yaml` open. Type `i` to enter in the insert mode. Paste (`Ctrl+V` or `Command+V`) the copied `build.yaml` contents from above. Press ```Esc``` to go back to the command mode. Type `:wq` and the press `Enter` to save and quit vi.
+If you are not familiar with using `vi`, you can use issue the following command using `echo` to create the `build.yaml` file.
+
+```
+echo "packages:
+- name: "bind"
+  release: "ThinXR_7.3.15"
+  version: "1.0.1"
+  sources:
+    - name: bind
+      file: bind9/bind.tar.gz
+  config-dir:
+    - name: bind-configs
+      dir: bind9/config" > ~/xr-appmgr-build/bind9/build.yaml
+```
 
 - The different options set in our ```build.yaml``` are:
     - The name of our package is specified under the name in packages. A single ```build.yaml``` can specify multiple packages to be installed. The ```version``` option can be specified to tag a version to the built ```rpm```. 
@@ -369,7 +382,8 @@ Edit this file to add our DNS server, `nameserver 10.1.1.1` in this list.
 ```
 vi /etc/resolv.conf
 ```
-Recall that you will have a vi terminal for an existing file `/etc/resolv.conf` open. Type `i` to enter in the insert mode. Add the line `nameserver 10.1.1.1` at the beginning of the file. Press ```Esc``` to go back to the command mode. Type `wq` and the press `Enter` to save and quit vi.
+
+Alternatively, if you are not familiar with `vi`, you can use the following command with `echo`.
 
 Your edited `/etc/resolv.conf` should look like:
 
