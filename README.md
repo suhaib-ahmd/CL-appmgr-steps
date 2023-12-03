@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Welcome to DEVWKS-2125! This is your guide to developing and deploying your own docker applications for Cisco routers running IOS-XR software.
+Welcome to DEVWKS-2519! This is your guide to developing and deploying your own docker applications for Cisco routers running IOS-XR software.
 
 In this workshop you will learn about IOS-XR's application hosting features. We will package an open-source DNS server's docker image (Ubuntu-based bind9) into an IOS-XR supported ```.rpm``` package using appmgr build scripts (https://github.com/ios-xr/xr-appmgr-build).
 
@@ -19,7 +19,7 @@ Bonus content includes instructions to make your application VRF aware and guide
 
 - You will use a Cisco anyconnect VPN to connect you to the workshop sandbox environment. You can find instructions to connect to this VPN in a later section of this guide. You will have a WebEx message containing VPN credentials that will be accessible through the workshop laptop.
 
-- Environment: You are going to be using Virtual XR routers (running virtualized Cisco 8000 instances) and Centos7 Devbox VMs (for building images). You will use ssh to connect to these devices whenver needed. Again, ssh connectivity details accessbile through WebEx on the workshop laptop.
+- Environment: You are going to be using Virtual XR routers (running virtualized Cisco 8000 instances) and  Devbox Linux environments (for packaging applications). You will use ssh to connect to these devices whenver needed. Again, ssh connectivity details accessbile through WebEx on the workshop laptop.
 
 - I will use the "DNZ Workshop 05" WebEx space to broadcast any instructions/commands/messages during this session. Your workshop laptop should be a part of this space.
 
@@ -27,11 +27,11 @@ Bonus content includes instructions to make your application VRF aware and guide
 
 This workshop will use a simple topology consisting of the following devices:
 
-- Devbox: This is a Centos7 Linux environment that we will use to build our appmgr ```rpm ``` package. After installing our DNS Server application on the router, we will use the Devbox as a DNS client and try to resolve domain names to IP addresses using the ```nslookup``` utility which is pre-installed on the Devbox.
+- Devbox: This is a Linux environment that we will use to build our appmgr ```rpm ``` package. After installing our DNS Server application on the router, we will use the Devbox as a DNS client and try to resolve domain names to IP addresses using the ```nslookup``` utility which is pre-installed on the Devbox.
 
-- R0: This is a virtual router runnining IOS-XR. The virtual router is emulating the Cisco 8000 series of routers. We will use this router to issue ```appmgr``` commands to install and run our DNS server application package. 
+- R1: This is a virtual router runnining IOS-XR. The virtual router is emulating the Cisco 8000 series of routers. We will use this router to issue ```appmgr``` commands to install and run our DNS server application package. 
 
-- Clientbox: This is also a Centos7 Linux environment. You will not need to access this device. The entry for ```service1.clus.demo ``` in our DNS server will correspond to this device's IP. We will use this to test connection to this device using ```ping```.
+- Clientbox: This is also a  Linux environment. You will not need to access this device. The entry for ```service1.clmel.demo ``` in our DNS server will correspond to this device's IP. We will use this to test connection to this device using ```ping```.
 
 ![Workshop Topology](images/topology.svg)
 
@@ -138,13 +138,13 @@ echo "packages:
     ```
     cp -r /root/bind-configs/config ~/xr-appmgr-build/bind9 
     ```
-    - You can inspect the contents of these configs. For the purposes of this demo, the DNS server contains a mapping of ```service1.clus.demo ``` to ``` 10.1.1.34```. Once we have the DNS server running on the router, we will verify that a client (such as the Devbox) can query the router with a ```DNS WHOIS?``` and get the correct response.
+    - You can inspect the contents of these configs. For the purposes of this demo, the DNS server contains a mapping of ```service1.clmel.demo ``` to ``` 10.1.1.34```. Once we have the DNS server running on the router, we will verify that a client (such as the Devbox) can query the router with a ```DNS WHOIS?``` and get the correct response.
     <br></br>
 
     **bind-configs/db.ios-xr.tme**
     ```
     $TTL    1d ; default expiration time (in seconds) of all RRs without their own TTL value
-    @       IN      SOA     ns1.clus.demo. root.clus.demo. (
+    @       IN      SOA     ns1.clmel.demo. root.clmel.demo. (
                     3      ; Serial
                     1d     ; Refresh
                     1h     ; Retry
@@ -152,18 +152,18 @@ echo "packages:
                     1h )   ; Negative Cache TTL
 
     ; name servers - NS records
-        IN      NS      ns1.clus.demo.
+        IN      NS      ns1.clmel.demo.
 
     ; name servers - A records
-    ns1.clus.demo.             IN      A      10.1.1.1
+    ns1.clmel.demo.             IN      A      10.1.1.1
 
-    service1.clus.demo.        IN      A      10.1.1.34
+    service1.clmel.demo.        IN      A      10.1.1.34
 
     ```
 
     **bind-configs/named.conf.local**
     ```
-    zone "clus.demo" {
+    zone "clmel.demo" {
     type master;
     file "/etc/bind/zones/db.ios-xr.tme";
     };
@@ -397,22 +397,22 @@ nameserver 192.168.122.1
 search localdomain
 ```
 
-Now let us try issuing an `nslookup` query for the entry in our DNS Server - `service1.clus.demo`. Your DNS server should be able to provide you with a response with the IP address of the Clientbox.
+Now let us try issuing an `nslookup` query for the entry in our DNS Server - `service1.clmel.demo`. Your DNS server should be able to provide you with a response with the IP address of the Clientbox.
 
 ```
-[root@localhost ~]# nslookup service1.clus.demo
+[root@localhost ~]# nslookup service1.clmel.demo
 Server:		10.1.1.1
 Address:	10.1.1.1#53
 
-Name:	service1.clus.demo
+Name:	service1.clmel.demo
 Address: 10.1.1.34
 ```
 
 Let us try using `ping` to reach the Clientbox. 
 
 ```
-[root@localhost ~]# ping service1.clus.demo
-PING service1.clus.demo (10.1.1.34) 56(84) bytes of data.
+[root@localhost ~]# ping service1.clmel.demo
+PING service1.clmel.demo (10.1.1.34) 56(84) bytes of data.
 64 bytes from 10.1.1.34 (10.1.1.34): icmp_seq=1 ttl=63 time=3.52 ms
 64 bytes from 10.1.1.34 (10.1.1.34): icmp_seq=2 ttl=63 time=4.88 ms
 64 bytes from 10.1.1.34 (10.1.1.34): icmp_seq=3 ttl=63 time=3.67 ms
