@@ -234,9 +234,9 @@ Package
 bind-1.0.1-ThinXR_7.3.15.x86_64
 RP/0/RP0/CPU0:R1#
 ```
-Once the package has been installed, the application can be activated using
+Once the package has been installed, the application can be activated using the `appmgr application activate` command. This command follows the following syntax:
 ```
-(conf) appmgr application my-app activate type docker source hello-world docker-run-opts “<YOUR DOCKER RUN OPTS>”
+appmgr application my-app activate type docker source hello-world docker-run-opts “<YOUR DOCKER RUN OPTS>”
 ```
 For our application:
 ```
@@ -400,6 +400,12 @@ search localdomain
 Now let us try issuing an `nslookup` query for the entry in our DNS Server - `service1.clmel.demo`. Your DNS server should be able to provide you with a response with the IP address of the Clientbox.
 
 ```
+nslookup service1.clmel.demo
+```
+
+We should get a response with the IP address of `service1.clmel.demo` resolved:
+
+```
 [root@localhost ~]# nslookup service1.clmel.demo
 Server:		10.1.1.1
 Address:	10.1.1.1#53
@@ -409,6 +415,12 @@ Address: 10.1.1.34
 ```
 
 Let us try using `ping` to reach the Clientbox. 
+
+```
+ping service1.clmel.demo
+```
+
+We should be able to ping the Clientbox:
 
 ```
 [root@localhost ~]# ping service1.clmel.demo
