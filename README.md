@@ -205,10 +205,10 @@ scp ~/xr-appmgr-build/RPMS/x86_64/bind-1.0.1-ThinXR_7.3.15.x86_64.rpm cisco@10.1
 
 ## Installing and Running your application
 
-### Connecting to your Router (R0)
+### Connecting to your Router (R1)
 
 - Open a another terminal tab on your workshop laptop.
-- SSH to the Router (R0) using the Devbox IP address and port number provided to you on WebEx.
+- SSH to the Router (R1) using the Devbox IP address and port number provided to you on WebEx.
 - E.g. ```ssh -p <router port> cisco@198.18.134.1```
 
 ### Installing the application package
