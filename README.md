@@ -66,7 +66,7 @@ IOS-XR's appmgr build scripts allow you to package docker images in ```.rpm``` f
 - Clone and enter this repository.
  ``` 
  git clone https://github.com/ios-xr/xr-appmgr-build.git 
- cd xr-appmgr-build/
+ cd xr-appmgr-build/ 
  ```
 - In this repository, ```appmgr_build``` is the main script that builds ```.rpm``` packages from docker images. Application specific information that can be provided to the ```appmgr_build``` script: 
     - A compressed tarball containing our docker image.
@@ -77,12 +77,12 @@ IOS-XR's appmgr build scripts allow you to package docker images in ```.rpm``` f
 - To simplify our workflow, let us create a directory specific to our application.
 ```
 mkdir bind9/
-cd bind9/
+cd bind9/ 
 ```
 - Now let us add our a compressed docker image in this directory. Since we are using ```ubuntu/bind9``` as our DNS server, we can directly pull this image from Dockerhub. Once the image has been pulled, we can save a compressed version of this image using the ```docker save``` command.
 ```
 docker pull ubuntu/bind9
-docker save ubuntu/bind9 > bind.tar.gz
+docker save ubuntu/bind9 > bind.tar.gz 
 ```
 
 - After we have our compressed docker image, let us create a build.yaml file to add our build options. You can either use the ```vi``` text editor on the Devbox terminal shell. Or use Remote SSH connect with VSCode on your workshop laptop. (https://code.visualstudio.com/docs/remote/ssh)
@@ -119,7 +119,7 @@ echo "packages:
       file: bind9/bind.tar.gz
   config-dir:
     - name: bind-configs
-      dir: bind9/config" > ~/xr-appmgr-build/bind9/build.yaml
+      dir: bind9/config" > ~/xr-appmgr-build/bind9/build.yaml 
 ```
 
 - The different options set in our ```build.yaml``` are:
