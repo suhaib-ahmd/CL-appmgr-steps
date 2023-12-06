@@ -17,11 +17,9 @@ Bonus content includes instructions to make your application VRF aware and guide
 
 - Please feel free to ask any workshop-related questions during the session. For general IOS-XR application hosting related queries, meet me after the session.
 
-- You will use a Cisco anyconnect VPN to connect you to the workshop sandbox environment. You can find instructions to connect to this VPN in a later section of this guide. You will have a WebEx message containing VPN credentials that will be accessible through the workshop laptop.
+- You will use a Cisco anyconnect VPN to connect you to the workshop sandbox environment. You can find instructions to connect to this VPN in a later section of this guide. Your laptops are already connected to this VPN. If you face any connectivity issues during this demo, let us know! The session team will help you with it.
 
-- Environment: You are going to be using Virtual XR routers (running virtualized Cisco 8000 instances) and  Devbox Linux environments (for packaging applications). You will use ssh to connect to these devices whenver needed. Again, ssh connectivity details accessbile through WebEx on the workshop laptop.
-
-- I will use the "DNZ Workshop 05" WebEx space to broadcast any instructions/commands/messages during this session. Your workshop laptop should be a part of this space.
+- Environment: You are going to be using Virtual XR routers (running virtualized Cisco 8000 instances) and  Devbox Linux environments (for packaging applications). You will use ssh to connect to these devices whenver needed. 
 
 ## Workshop  Topology
 
@@ -35,19 +33,22 @@ This workshop will use a simple topology consisting of the following devices:
 
 ![Workshop Topology](images/topology.svg)
 
-## VPN Connection
+## Verify your connections
 
-To access your assigned workshop environment, you must first connect to the sandbox VPN.
+To verify whether you are able to access the demo environment, try to `ssh` into your Devbox and your router. We have already populated the `~/.ssh/config` file on your laptops, so you should simply be able to access the devices using:
 
-- Begin by opening the Cisco Anyconnect Secure Mobility Client on your workshop laptop. 
-- Enter ```dcloud-sjc-anyconnect.cisco.com``` in the VPN field as shown below.
-- When prompted for a username and password, enter the credentials provided to you on WebEx.
-- A successful VPN connection should be accompanied by a success message on the Anyconnect client.
+To `ssh` into the Devbox:
 
-<img src="images/anyconnect-1.png"  width="150" height="200"><img src="images/anyconnect-2.png"  width="200" height="300"><img src="images/anyconnect-3.png"  width="200" height="300"> 
-<br></br>
-<em>Connecting to the VPN</em>
+```
+ssh devbox
+```
 
+
+To `ssh` into the router:
+
+```
+ssh router
+```
 ## Building your application
 
 IOS-XR's appmgr build scripts allow you to package docker images in ```.rpm``` files. The following steps will help you create an appmgr rpm for the ubuntu/bind9 docker image.
@@ -57,7 +58,8 @@ IOS-XR's appmgr build scripts allow you to package docker images in ```.rpm``` f
 ### Connecting to your Devbox
 
 - Open a terminal tab on your workshop laptop.
-- SSH to the Devbox using the Devbox IP address and port number provided to you on WebEx.
+- Connect to the Devbox using ssh by issuing the following command: ```ssh devbox```
+- If the command above doesn't work, SSH to the Devbox using the Devbox IP address and port number provided to you.
 - E.g. ```ssh -p <Devbox port> root@198.18.134.1```
 
 ### Using the appmgr build scripts
@@ -85,7 +87,7 @@ docker pull ubuntu/bind9
 docker save ubuntu/bind9 > bind.tar.gz 
 ```
 
-- After we have our compressed docker image, let us create a build.yaml file to add our build options. You can either use the ```vi``` text editor on the Devbox terminal shell. Or use Remote SSH connect with VSCode on your workshop laptop. (https://code.visualstudio.com/docs/remote/ssh)
+- After we have our compressed docker image, let us create a build.yaml file to add our build options. You can either use the ```vi``` text editor on the Devbox terminal shell.
 
 - For our application, the ```build.yaml``` is provided below:
 ```yaml
@@ -208,7 +210,8 @@ scp ~/xr-appmgr-build/RPMS/x86_64/bind-1.0.1-ThinXR_7.3.15.x86_64.rpm cisco@10.1
 ### Connecting to your Router (R1)
 
 - Open a another terminal tab on your workshop laptop.
-- SSH to the Router (R1) using the Devbox IP address and port number provided to you on WebEx.
+- Connect to the Devbox using ssh by issuing the following command: ```ssh devbox```
+- If the command above doesn't work, SSH to the Router (R1) using the Devbox IP address and port number provided to you.
 - E.g. ```ssh -p <router port> cisco@198.18.134.1```
 
 ### Installing the application package
@@ -360,7 +363,8 @@ E.g., ```appmgr application start name bind ```
 To test our application let us first reconnect to our Devbox.
 
 - Open a new terminal tab on your workshop laptop or go back to the original Devbox SSH terminal.
-- If your SSH session was terminated, SSH to the Devbox using the Devbox IP address and port number provided to you on WebEx.
+- If your SSH session was terminated, SSH to the Devbox using `ssh devbox`
+- If this doesn't work, enter the Devbox IP address and port number provided to you.
 - E.g. ```ssh -p <Devbox port> root@198.18.134.1```
 
 We will use the Devbox as our DNS client so let us configure the Devbox to use our DNS Server as its primary NS.
