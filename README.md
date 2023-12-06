@@ -33,22 +33,6 @@ This workshop will use a simple topology consisting of the following devices:
 
 ![Workshop Topology](images/topology.svg)
 
-## Verify your connections
-
-To verify whether you are able to access the demo environment, try to `ssh` into your Devbox and your router. We have already populated the `~/.ssh/config` file on your laptops, so you should simply be able to access the devices using:
-
-To `ssh` into the Devbox:
-
-```
-ssh devbox
-```
-
-
-To `ssh` into the router:
-
-```
-ssh router
-```
 ## Building your application
 
 IOS-XR's appmgr build scripts allow you to package docker images in ```.rpm``` files. The following steps will help you create an appmgr rpm for the ubuntu/bind9 docker image.
@@ -61,6 +45,10 @@ IOS-XR's appmgr build scripts allow you to package docker images in ```.rpm``` f
 - Connect to the Devbox using ssh by issuing the following command: ```ssh devbox```
 - If the command above doesn't work, SSH to the Devbox using the Devbox IP address and port number provided to you.
 - E.g. ```ssh -p <Devbox port> root@198.18.134.1```
+
+To ensure you are connected to the correct device, make sure that your Devbox has a hostname aligned with your Seat Number.
+
+For e.g., Seat Number 5 should have a devbox hostname as `dev5`.
 
 ### Using the appmgr build scripts
 
@@ -210,9 +198,14 @@ scp ~/xr-appmgr-build/RPMS/x86_64/bind-1.0.1-ThinXR_7.3.15.x86_64.rpm cisco@10.1
 ### Connecting to your Router (R1)
 
 - Open a another terminal tab on your workshop laptop.
-- Connect to the Devbox using ssh by issuing the following command: ```ssh devbox```
+- Connect to the Router using ssh by issuing the following command: ```ssh router```
 - If the command above doesn't work, SSH to the Router (R1) using the Devbox IP address and port number provided to you.
 - E.g. ```ssh -p <router port> cisco@198.18.134.1```
+
+To ensure you are connected to the correct device, ensure that the Router has a hostname aligned with your Seat Number.
+
+For e.g., Seat Number 5 should have the router hostname as `Attendee5_R1`
+
 
 ### Installing the application package
 
